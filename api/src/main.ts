@@ -1,12 +1,17 @@
-import 'reflect-metadata';
-import { ValidationPipe } from '@nestjs/common';
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
-async function bootstrap(): Promise<void> {
+// Bootstraps and starts the NestJS application.
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({ origin: process.env.WEB_ORIGIN ?? 'http://localhost:3000' });
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+
+  // Allows the Next.js frontend to communicate with the API.
+  app.enableCors({
+    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000',
+  });
+
+  // Starts the backend on port 3001 by default.
   await app.listen(Number(process.env.PORT ?? 3001));
 }
 
