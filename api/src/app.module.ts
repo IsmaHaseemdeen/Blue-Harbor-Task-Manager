@@ -2,17 +2,14 @@
 import { Module } from '@nestjs/common';
 import { HealthController } from './health.controller';
 import { PrismaModule } from './prisma/prisma.module';
+import { TasksModule } from './tasks/tasks.module';
 
 // Root module that connects the application's features.
 @Module({
   imports: [
-    // Initializes the Prisma database integration.
     PrismaModule,
+    TasksModule,
   ],
-
-  controllers: [
-    // Registers the API health-check endpoint.
-    HealthController,
-  ],
+  controllers: [HealthController],
 })
 export class AppModule {}
