@@ -282,7 +282,7 @@ Docker Desktop shows the Next.js frontend and NestJS backend running successfull
 
 The backend logs also confirmed that Prisma migrations completed successfully.
 
-![Docker Compose Containers](docs/screenshots/11-Docker-Compose.png)
+![Docker Compose Containers](docs/screenshots/11-Docker-compose.png)
 
 ### Validation Checklist
 
