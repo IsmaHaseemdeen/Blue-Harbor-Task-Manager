@@ -1,0 +1,19 @@
+# dependencies and build output
+node_modules/
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+
+# local environment and database
+.env
+.env.local
+.env.*.local
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# generated files
+api/generated/
+.DS_Store
