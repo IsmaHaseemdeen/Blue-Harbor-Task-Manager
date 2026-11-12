@@ -1,3 +1,8 @@
+
+"use client";
+
+// LLM: Displays tasks in a readable table with status badges and actions.
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Task, TaskStatus } from "@/lib/tasks";
@@ -51,19 +56,23 @@ export function TaskTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="text-base font-semibold text-slate-900">
+          <TableHead className="min-w-52 text-sm font-semibold text-slate-700">
             Title
           </TableHead>
-          <TableHead className="text-base font-semibold text-slate-900">
+
+          <TableHead className="min-w-64 text-sm font-semibold text-slate-700">
             Description
           </TableHead>
-          <TableHead className="text-base font-semibold text-slate-900">
+
+          <TableHead className="text-sm font-semibold text-slate-700">
             Status
           </TableHead>
-          <TableHead className="text-base font-semibold text-slate-900">
+
+          <TableHead className="whitespace-nowrap text-sm font-semibold text-slate-700">
             Due Date
           </TableHead>
-          <TableHead className="text-right text-base font-semibold text-slate-900">
+
+          <TableHead className="text-right text-sm font-semibold text-slate-700">
             Actions
           </TableHead>
         </TableRow>
@@ -71,30 +80,45 @@ export function TaskTable({
 
       <TableBody>
         {tasks.map((task) => (
-          <TableRow key={task.id}>
-            <TableCell className="text-xl font-medium text-slate-900">
+          <TableRow
+            key={task.id}
+            className="hover:bg-slate-50"
+          >
+            {/* Compact task title */}
+            <TableCell className="text-base font-medium text-slate-900">
               {task.title}
             </TableCell>
 
-            <TableCell className="max-w-md text-slate-900">
-              {task.description || "—"}
+            {/* Shortened description with full text on hover */}
+            <TableCell className="max-w-xs">
+              <p
+                className="truncate text-sm text-slate-600"
+                title={task.description || undefined}
+              >
+                {task.description || "-"}
+              </p>
             </TableCell>
 
+            {/* Colored status badge */}
             <TableCell>
               <Badge
                 variant="secondary"
-                className={`rounded-full px-3 py-1 text-sm font-medium ${statusStyles[task.status].className}`}
+                className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium ${statusStyles[task.status].className}`}
               >
                 {statusStyles[task.status].label}
               </Badge>
             </TableCell>
 
-            <TableCell className="text-slate-900">
-              {task.dueDate ? task.dueDate.slice(0, 10) : "—"}
+            {/* Task due date */}
+            <TableCell className="whitespace-nowrap text-sm text-slate-700">
+              {task.dueDate
+                ? task.dueDate.slice(0, 10)
+                : "-"}
             </TableCell>
 
+            {/* Edit and delete actions */}
             <TableCell className="text-right">
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-2">
                 <Button
                   size="sm"
                   variant="outline"

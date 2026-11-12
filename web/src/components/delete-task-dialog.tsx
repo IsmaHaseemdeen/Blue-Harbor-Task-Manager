@@ -1,7 +1,7 @@
 
 "use client";
 
-// LLM: Confirms deletion before permanently removing a task.
+// Confirms deletion before permanently removing a task.
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -58,7 +58,7 @@ export function DeleteTaskDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            LLM Delete Task?
+            Delete Task?
           </AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete

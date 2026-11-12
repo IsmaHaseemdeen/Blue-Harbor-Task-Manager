@@ -1,7 +1,7 @@
 
 "use client";
 
-// LLM: Task dashboard with CRUD, search, filters and priority summaries.
+// Task dashboard with CRUD, search, filtering, sorting and priority summaries.
 
 import {
   useCallback,
@@ -34,12 +34,16 @@ import { Toaster } from "@/components/ui/sonner";
 import { TaskTable } from "@/components/task-table";
 import { TaskDialog } from "@/components/task-dialog";
 import { DeleteTaskDialog } from "@/components/delete-task-dialog";
-import { getTasks, type Task, type TaskStatus } from "@/lib/tasks";
+import {
+  getTasks,
+  type Task,
+  type TaskStatus,
+} from "@/lib/tasks";
 
 type StatusFilter = TaskStatus | "ALL";
 type SortOrder = "DEFAULT" | "EARLIEST" | "LATEST";
 
-// Returns today's date in YYYY-MM-DD format.
+// Returns the current local date.
 function getToday() {
   const now = new Date();
   const year = now.getFullYear();
@@ -49,10 +53,14 @@ function getToday() {
   return `${year}-${month}-${day}`;
 }
 
-// Calculates the number of days until a task is due.
+// Calculates the number of days until a due date.
 function daysUntil(date: string, today: string) {
-  const due = Date.parse(`${date.slice(0, 10)}T00:00:00Z`);
-  const current = Date.parse(`${today}T00:00:00Z`);
+  const due = Date.parse(
+    `${date.slice(0, 10)}T00:00:00Z`
+  );
+  const current = Date.parse(
+    `${today}T00:00:00Z`
+  );
 
   return Math.round((due - current) / 86400000);
 }
@@ -62,14 +70,16 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Controls the create and edit dialog.
+  // Controls the create and edit dialogs.
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTask] =
+    useState<Task | null>(null);
 
   // Stores the task selected for deletion.
-  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+  const [deletingTask, setDeletingTask] =
+    useState<Task | null>(null);
 
-  // Stores search, filter and sorting selections.
+  // Search, status filter and sorting selections.
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>("ALL");
@@ -82,7 +92,7 @@ export default function HomePage() {
     setToday(getToday());
   }, []);
 
-  // Retrieves tasks from the NestJS backend.
+  // Retrieves saved tasks from the NestJS backend.
   const loadTasks = useCallback(async () => {
     try {
       setError("");
@@ -94,12 +104,11 @@ export default function HomePage() {
     }
   }, []);
 
-  // Loads tasks when the page opens.
   useEffect(() => {
     void loadTasks();
   }, [loadTasks]);
 
-  // Calculates priority counts using task due dates.
+  //Calculates priority counts from task due dates.
   const priorities = useMemo(() => {
     const counts = {
       high: 0,
@@ -129,14 +138,16 @@ export default function HomePage() {
     return counts;
   }, [tasks, today]);
 
-  // Filters and sorts tasks without modifying database records.
+  // Filters tasks and applies the selected ordering.
   const visibleTasks = useMemo(() => {
     const query = search.trim().toLowerCase();
 
     const filtered = tasks.filter((task) => {
       const matchesSearch =
         task.title.toLowerCase().includes(query) ||
-        (task.description ?? "").toLowerCase().includes(query);
+        (task.description ?? "")
+          .toLowerCase()
+          .includes(query);
 
       const matchesStatus =
         statusFilter === "ALL" ||
@@ -145,18 +156,30 @@ export default function HomePage() {
       return matchesSearch && matchesStatus;
     });
 
+    // Default: Done, In Progress, then To Do.
     if (sortOrder === "DEFAULT") {
-      return filtered;
+      const statusOrder: Record<TaskStatus, number> = {
+        DONE: 0,
+        IN_PROGRESS: 1,
+        TODO: 2,
+      };
+
+      return [...filtered].sort(
+        (a, b) =>
+          statusOrder[a.status] - statusOrder[b.status]
+      );
     }
 
+    // Explicit due-date sorting overrides status ordering.
     return [...filtered].sort((a, b) => {
-      // Tasks without due dates always appear last.
+      // Tasks without due dates appear last.
       if (!a.dueDate && !b.dueDate) return 0;
       if (!a.dueDate) return 1;
       if (!b.dueDate) return -1;
 
       const difference =
-        Date.parse(a.dueDate) - Date.parse(b.dueDate);
+        Date.parse(a.dueDate) -
+        Date.parse(b.dueDate);
 
       return sortOrder === "EARLIEST"
         ? difference
@@ -164,19 +187,19 @@ export default function HomePage() {
     });
   }, [tasks, search, statusFilter, sortOrder]);
 
-  // Opens an empty form for creating a task.
+  // Opens an empty form for a new task.
   function handleCreate() {
     setEditingTask(null);
     setDialogOpen(true);
   }
 
-  // Opens the form with an existing task's information.
+  // Opens the edit form with selected task data.
   function handleEdit(task: Task) {
     setEditingTask(task);
     setDialogOpen(true);
   }
 
-  // Resets search, filters and sorting.
+  // Clears search and resets all filters.
   function clearFilters() {
     setSearch("");
     setStatusFilter("ALL");
@@ -186,12 +209,10 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 px-4 py-8 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl space-y-6">
-
-        {/* Header with larger logo */}
+        {/* Header */}
         <header className="flex flex-col gap-5 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-5">
-
-            {/* Logo container */}
+            {/* Application logo */}
             <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 p-2 shadow-sm">
               <Image
                 src="/blue-harbor-logo.png"
@@ -203,7 +224,6 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Application title */}
             <div>
               <p className="mb-1 text-xs font-bold tracking-[0.22em] text-blue-600">
                 BLUE HARBOR
@@ -214,12 +234,14 @@ export default function HomePage() {
               </h1>
 
               <p className="mt-2 text-slate-500">
-                <i>Plan, prioritize, manage, and complete tasks efficiently.</i>
+                <i>
+                  Plan, prioritize, manage, and complete
+                  tasks efficiently.
+                </i>
               </p>
             </div>
           </div>
 
-          {/* Create task button */}
           <Button
             onClick={handleCreate}
             className="bg-blue-600 text-white hover:bg-blue-700"
@@ -229,19 +251,17 @@ export default function HomePage() {
           </Button>
         </header>
 
-        {/* Task count and priority cards */}
+        {/* Task summary cards */}
         <section
           aria-label="Task summary"
           className="grid grid-cols-2 gap-3 md:grid-cols-4"
         >
-
           {/* Total tasks */}
           <div className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-slate-500">
                 Total Tasks
               </p>
-
               <ClipboardList className="size-5 text-blue-500" />
             </div>
 
@@ -260,7 +280,6 @@ export default function HomePage() {
               <p className="text-sm font-medium text-slate-500">
                 High Priority
               </p>
-
               <AlertCircle className="size-5 text-red-500" />
             </div>
 
@@ -279,7 +298,6 @@ export default function HomePage() {
               <p className="text-sm font-medium text-slate-500">
                 Medium Priority
               </p>
-
               <Clock3 className="size-5 text-amber-500" />
             </div>
 
@@ -298,7 +316,6 @@ export default function HomePage() {
               <p className="text-sm font-medium text-slate-500">
                 Low Priority
               </p>
-
               <CheckCircle2 className="size-5 text-green-500" />
             </div>
 
@@ -312,15 +329,14 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Search, status filter and due date sorting */}
+        {/* Search, status filter and due-date sorting */}
         <section className="flex flex-col gap-3 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm lg:flex-row lg:items-center">
-
           {/* Search input */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
 
             <Input
-              aria-label="LLM Search tasks"
+              aria-label="Search tasks"
               placeholder="Search tasks..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -336,7 +352,7 @@ export default function HomePage() {
             }
           >
             <SelectTrigger
-              aria-label="LLM Filter by status"
+              aria-label="Filter by status"
               className="h-11 w-full border-blue-100 lg:w-44"
             >
               <SelectValue placeholder="All statuses" />
@@ -361,7 +377,7 @@ export default function HomePage() {
             </SelectContent>
           </Select>
 
-          {/* Due date sorting */}
+          {/* Sorting options */}
           <Select
             value={sortOrder}
             onValueChange={(value) =>
@@ -369,15 +385,15 @@ export default function HomePage() {
             }
           >
             <SelectTrigger
-              aria-label="LLM Sort by due date"
+              aria-label="Sort tasks"
               className="h-11 w-full border-blue-100 lg:w-44"
             >
-              <SelectValue placeholder="Due date" />
+              <SelectValue placeholder="Sort tasks" />
             </SelectTrigger>
 
             <SelectContent>
               <SelectItem value="DEFAULT">
-                Default order
+                Status order
               </SelectItem>
 
               <SelectItem value="EARLIEST">
@@ -390,7 +406,7 @@ export default function HomePage() {
             </SelectContent>
           </Select>
 
-          {/* Clear filters button */}
+          {/* Clear filters */}
           {(search ||
             statusFilter !== "ALL" ||
             sortOrder !== "DEFAULT") && (
@@ -405,13 +421,11 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* Main task table */}
+        {/* Task table */}
         <section className="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
-
-          {/* Table heading */}
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 sm:px-6">
             <h2 className="text-xl font-semibold text-slate-900">
-              LLM Your Tasks
+              Your Tasks
             </h2>
 
             <span className="text-sm text-slate-500">
@@ -419,7 +433,6 @@ export default function HomePage() {
             </span>
           </div>
 
-          {/* Table content */}
           <div className="p-4 sm:p-6">
             {loading ? (
               <p className="py-12 text-center text-slate-500">
@@ -467,7 +480,7 @@ export default function HomePage() {
         </section>
       </div>
 
-      {/* Create and edit task dialog */}
+      {/* Create/edit dialog */}
       <TaskDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -482,7 +495,7 @@ export default function HomePage() {
         onDeleted={loadTasks}
       />
 
-      {/* Success and error notifications */}
+      {/* Notifications */}
       <Toaster
         richColors
         position="bottom-right"

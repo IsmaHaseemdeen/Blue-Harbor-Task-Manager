@@ -1,7 +1,7 @@
 
 "use client";
 
-// LLM: Reusable dialog for creating and editing tasks.
+// Reusable dialog for creating and editing tasks.
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -115,7 +115,7 @@ export function TaskDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "LLM Edit Task" : "LLM Create Task"}
+            {isEditing ? "Edit Task" : "Create Task"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
@@ -126,7 +126,7 @@ export function TaskDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="task-title">LLM Title *</Label>
+            <Label htmlFor="task-title">Title *</Label>
             <Input
               id="task-title"
               value={title}
@@ -139,7 +139,7 @@ export function TaskDialog({
 
           <div className="space-y-2">
             <Label htmlFor="task-description">
-              LLM Description
+              Description
             </Label>
             <Textarea
               id="task-description"
@@ -151,7 +151,7 @@ export function TaskDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="task-status">LLM Status</Label>
+            <Label htmlFor="task-status">Status</Label>
             <Select
               value={status}
               onValueChange={(value) =>
@@ -173,7 +173,7 @@ export function TaskDialog({
 
           <div className="space-y-2">
             <Label htmlFor="task-due-date">
-              LLM Due Date
+              Due Date
             </Label>
             <Input
               id="task-due-date"
